@@ -16,51 +16,39 @@ class CategoryItemCard extends StatelessWidget {
   ];
   @override
   Widget build(BuildContext context) {
-    return Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        color: colors[num - 1],
-        child: Stack(
-          children: <Widget>[
-            Container(
-              height: 100.0,
-              width: 120.0,
-              child: Image.asset('assets/images/$num.png'),
-            ),
-            Center(
-              child: Container(
-                margin: EdgeInsets.only(top: 30.0),
-//                height: 150.0,
-//                width: 150.0,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 0),
-                    decoration: BoxDecoration(
-                      color: Colors.black12,
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 2,
-                        horizontal: 5,
-                      ),
-                      child: Text(
-                        title,
-                        softWrap: true,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+    if (title == 'Non-Specialist') {
+      return Container();
+    } else {
+      return GestureDetector(
+        child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 5),
+          height: 80.0,
+          width: 120.0,
+//            child: Image.asset('assets/images/$num.png'),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 2,
+                horizontal: 7,
+              ),
+              child: Text(
+                title,
+                overflow: TextOverflow.fade,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black45,
+                    fontSize: 12,
+                    fontFamily: 'ChelseaMarket'),
               ),
             ),
-          ],
-        ));
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: colors[num - 1],
+          ),
+        ),
+        onTap: () {},
+      );
+    }
   }
 }

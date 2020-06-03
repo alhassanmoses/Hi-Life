@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hilife/constants.dart';
 import 'package:hilife/models/user.dart';
 import 'package:provider/provider.dart';
 
@@ -66,7 +67,7 @@ class _HpListScreenState extends State<HpListScreen> {
                               fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                         Text(
-                          '${users[i].profession} | ${users[i].age}',
+                          '${kProfessions[users[i].professionIndex].specialisationProfession} | ${users[i].age}',
                           style: TextStyle(color: Colors.black54),
                         ),
                       ],

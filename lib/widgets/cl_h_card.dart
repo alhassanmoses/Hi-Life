@@ -43,7 +43,7 @@ class _ClHCardState extends State<ClHCard> {
                 borderRadius: BorderRadius.circular(10.0),
               ),
               elevation: 5,
-              color: Colors.white,
+              color: Colors.white10,
               child: Container(
                 height: 80,
                 child: Row(

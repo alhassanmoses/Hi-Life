@@ -38,7 +38,8 @@ class Users with ChangeNotifier {
     String email,
     String fname,
     String lname,
-    String profession,
+    int professionIndex,
+    int specializationIndex,
     int experience,
     String address,
     String shortDescription,
@@ -55,9 +56,10 @@ class Users with ChangeNotifier {
           'email': email,
           'fname': fname,
           'lname': lname,
-          'profession': profession,
+          'professionIndex': professionIndex,
           'shortDescription': shortDescription,
           'experience': experience,
+          'specializationIndex': specializationIndex,
           'address': address,
           'age': age,
           'sex': sex,
@@ -68,7 +70,8 @@ class Users with ChangeNotifier {
           email: email,
           fname: fname,
           lname: lname,
-          profession: profession,
+          professionIndex: professionIndex,
+          specializationIndex: specializationIndex,
           shortDescription: shortDescription,
           experience: experience,
           address: address,
@@ -143,7 +146,8 @@ class Users with ChangeNotifier {
             address: user.data['address'],
             age: user.data['age'],
             sex: user.data['sex'],
-            profession: user.data['profession'],
+            professionIndex: user.data['professionIndex'],
+            specializationIndex: user.data['specializationIndex'],
             experience: user.data['experience'],
             shortDescription: user.data['shortDescription'],
             userId: user.data['userId'],
@@ -156,7 +160,7 @@ class Users with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> rateHp(int rating, String hpUid) async {
+  Future<void> rateHp({int rating, String rated, String rater}) async {
     final int rat = rating;
 
     int five = 0;
@@ -166,56 +170,53 @@ class Users with ChangeNotifier {
     int one = 0;
     int zero = 0;
     int total;
-    int reviewers = 0;
+    int reviews = 0;
     await _firestore
         .collection('HpUserData')
-        .document(hpUid)
+        .document(rated)
+        .collection('RatingData')
+        .document('Rating')
         .get()
         .then((value) {
-      if (value.data['rating'] == null ? false : true) {
-        five = value.data['rating']['five'];
-        four = value.data['rating']['four'];
-        three = value.data['rating']['three'];
-        two = value.data['rating']['two'];
-        one = value.data['rating']['one'];
-        zero = value.data['rating']['zero'];
-        reviewers = value.data['rating']['reviewers'];
+      if (value.exists ? true : false) {
+        five = value.data['five'];
+        four = value.data['four'];
+        three = value.data['three'];
+        two = value.data['two'];
+        one = value.data['one'];
+        zero = value.data['zero'];
+        reviews = value.data['reviews'];
       }
     });
     switch (rat) {
       case 5:
         {
-          reviewers += 1;
           five += 1;
           break;
         }
       case 4:
         {
-          reviewers += 1;
           four += 1;
           break;
         }
       case 3:
         {
-          reviewers += 1;
           three += 1;
           break;
         }
       case 2:
         {
-          reviewers += 1;
           two += 1;
           break;
         }
       case 1:
         {
           one += 1;
-          reviewers += 1;
+
           break;
         }
       case 0:
         {
-          reviewers += 1;
           zero += 1;
           break;
         }
@@ -225,20 +226,40 @@ class Users with ChangeNotifier {
         }
     }
     total = (5 * five) + (4 * four) + (3 * three) + (2 * two) + (1 * one);
-    final averageRating = total / reviewers;
+    final averageRating = total / reviews;
 
-    _firestore.collection('HpUserData').document(hpUid).setData({
-      'rating': {
-        'five': five,
-        'four': four,
-        'three': three,
-        'two': two,
-        'one': one,
-        'zero': zero,
-        'total': total,
-        'rated': averageRating.toStringAsFixed(2),
-        'reviewers': reviewers,
-      }
+    _firestore
+        .collection('HpUserData')
+        .document(rated)
+        .collection('RatingData')
+        .document('Rating')
+        .setData({
+      'five': five,
+      'four': four,
+      'three': three,
+      'two': two,
+      'one': one,
+      'zero': zero,
+      'total': total,
+      'rated': double.parse(averageRating.toStringAsFixed(4)),
+      'reviews': reviews + 1,
     }, merge: true);
+//    'raters': FieldValue.arrayUnion([rater]),
+    _firestore
+        .collection('HpUserData')
+        .document(rated)
+        .collection('RatingData')
+        .document('Raters')
+        .setData(
+      {
+        '$rater': rating,
+      },
+    );
+
+//    _firestore.collection('HpUserData').document(rated).setData({
+//      'rating': {
+//
+//      }
+//    }, merge: true);
   }
 }

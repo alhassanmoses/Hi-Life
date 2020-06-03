@@ -5,7 +5,7 @@ import 'package:hilife/screens/client_home_screen.dart';
 import 'package:provider/provider.dart';
 
 import './auth_screen.dart';
-import './user_details_screen_collect.dart';
+import './user_details_collect_screen.dart';
 import '../providers/auth.dart';
 import './hp_home_screen.dart';
 

@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../constants.dart';
 import '../screens/signup_screen.dart';
+import '.././constants.dart';
 
 class UserDetailsScreen extends StatefulWidget {
   static const pageRoute = '/signup-screen';
@@ -68,20 +71,22 @@ class _SignUpFormState extends State<SignUpForm> {
   final GlobalKey<FormState> _formKey = GlobalKey();
 
   File _image;
-
   bool isHp = false;
   Sex sexVal = Sex.Male;
   String sex = 'Male';
+  Item selectedProfession;
+  Item selectedSpecialty;
+  bool isSpecialist = false;
 
   Map<String, Object> _formData = {
     'isHp': null,
     'email': null,
-    'password': null,
     'fname': null,
     'lname': null,
     'address': null,
     'age': null,
-    'profession': null,
+    'professionIndex': null,
+    'specializationIndex': null,
     'experience': null,
     'shortDescription': null,
     'sex': null,
@@ -164,16 +169,84 @@ class _SignUpFormState extends State<SignUpForm> {
     );
   }
 
-  Widget _buildProfessionTextFormField() {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: 'Profession',
-        labelStyle: kInputTextFormFieldLabelColor,
-        hintText: 'Please specify profession...',
+  Widget _buildProfessionMenu() {
+    return DropdownButtonFormField<Item>(
+      value: selectedProfession,
+      hint: Text(
+        "Select your profession",
+        overflow: TextOverflow.ellipsis,
       ),
-      keyboardType: TextInputType.text,
-      onSaved: (String value) {
-        _formData['profession'] = value;
+      onChanged: (Item profession) {
+        setState(() {
+          selectedProfession = profession;
+        });
+      },
+      //ignore: missing_return
+      validator: (Item value) {
+        if (value == null) {
+          return 'Please select a profession';
+        }
+      },
+      items: kProfessions.map<DropdownMenuItem<Item>>((Item value) {
+        return DropdownMenuItem<Item>(
+          value: value,
+          child: Container(
+              constraints: BoxConstraints(maxWidth: 300),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    value.specialisationProfession,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              )),
+        );
+      }).toList(),
+      onSaved: (Item val) {
+        _formData['professionIndex'] = val.index;
+      },
+    );
+  }
+
+  Widget _buildSpecialistMenu() {
+    return DropdownButtonFormField<Item>(
+      value: selectedSpecialty,
+      hint: Text(
+        "Select your Specialization(If applicable)",
+        overflow: TextOverflow.ellipsis,
+      ),
+      onChanged: (Item specialty) {
+        setState(() {
+          selectedSpecialty = specialty;
+        });
+      },
+      //ignore: missing_return
+
+      items: kSpecialisations.map<DropdownMenuItem<Item>>((Item value) {
+        return DropdownMenuItem<Item>(
+          value: value,
+          child: Container(
+              constraints: BoxConstraints(maxWidth: 300),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    value.specialisationProfession,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              )),
+        );
+      }).toList(),
+      onSaved: (Item val) {
+        if (val == null) {
+          _formData['specializationIndex'] = 0;
+        } else {
+          _formData['specializationIndex'] = val.index;
+        }
       },
     );
   }
@@ -205,7 +278,7 @@ class _SignUpFormState extends State<SignUpForm> {
       decoration: InputDecoration(
         labelText: 'Description',
         labelStyle: kInputTextFormFieldLabelColor,
-        hintText: 'Short professional discrition of youself (optional)...',
+        hintText: 'Short professional description of yourself (optional)...',
       ),
       keyboardType: TextInputType.text,
       onSaved: (String value) {
@@ -216,6 +289,9 @@ class _SignUpFormState extends State<SignUpForm> {
 
   void _submitForm() {
     if (!_formKey.currentState.validate()) {
+      return;
+    } else if (_image == null) {
+      Fluttertoast.showToast(msg: 'Please provide a profile picture');
       return;
     }
     sex = sexVal.toString().split('.').last;
@@ -307,7 +383,8 @@ class _SignUpFormState extends State<SignUpForm> {
               _buildAddressTextFormField(),
               _buildFirstNameTextFormField(),
               _buildLastNameTextFormField(),
-              if (isHp) _buildProfessionTextFormField(),
+              if (isHp) _buildProfessionMenu(),
+              if (isHp) _buildSpecialistMenu(),
               _buildAgeTextFormField(),
               if (isHp) _buildExperienceTextFormField(),
               if (isHp) _buildShortDescriptionTextFormField(),

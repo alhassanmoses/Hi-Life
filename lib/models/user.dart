@@ -27,7 +27,8 @@ class HpUserData {
   final String email;
   final String fname;
   final String lname;
-  final String profession;
+  final int professionIndex;
+  final int specializationIndex;
   final int experience;
   final String address;
   final String shortDescription;
@@ -45,7 +46,8 @@ class HpUserData {
       @required this.fname,
       @required this.lname,
       @required this.age,
-      @required this.profession,
+      @required this.professionIndex,
+      @required this.specializationIndex,
       @required this.sex,
       @required this.experience,
       @required this.pictureUrl,

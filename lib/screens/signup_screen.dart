@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -147,15 +148,19 @@ class _AuthCardState extends State<AuthCard> {
     setState(() => _isLoading = true);
     try {
       final _auth = Provider.of<Auth>(context, listen: false);
-      //login
+      //
+
       await _auth.signUp(_authData['email'], _authData['password']);
-      String uid = await Future.value(_auth.userId);
+
+      String uid = _auth.userId;
+
       bool success = await Provider.of<Users>(context, listen: false).addUser(
         isHp: widget.userData['isHp'],
         email: _authData['email'],
         fname: widget.userData['fname'],
         lname: widget.userData['lname'],
-        profession: widget.userData['profession'],
+        professionIndex: widget.userData['professionIndex'],
+        specializationIndex: widget.userData['specializationIndex'],
         shortDescription: widget.userData['shortDescription'],
         experience: widget.userData['experience'],
         address: widget.userData['address'],
@@ -164,6 +169,7 @@ class _AuthCardState extends State<AuthCard> {
         userId: uid,
         image: widget.userData['image'],
       );
+
       if (success) {
         bool _isUserHp = _auth.isHp;
         if (_isUserHp) {
@@ -176,6 +182,8 @@ class _AuthCardState extends State<AuthCard> {
         throw 'Unsuccessful upload of user Data in sign-up screen';
       }
     } catch (e) {
+      await FirebaseAuth.instance.currentUser();
+
       if (e is String) {
         _showErrorDialog(e);
       } else {

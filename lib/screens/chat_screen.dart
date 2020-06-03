@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../screens/appointment_screen.dart';
+import '../screens/create_appointment_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -63,9 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     focusNode.addListener(onFocusChange);
     KeyboardVisibility.onChange.listen((bool visible) {
-      setState(() {
-        _keyboardState = visible;
-      });
+      keyboardChanged(visible);
     });
     consultationId = '';
     isLoading = false;
@@ -73,6 +71,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
     getMeta();
     super.initState();
+  }
+
+  void keyboardChanged(bool visible) {
+    setState(() {
+      _keyboardState = visible;
+    });
   }
 
   @override
@@ -109,8 +113,11 @@ class _ChatScreenState extends State<ChatScreen> {
   //commit rating to db
   Future<void> rate(int starNum) async {
     try {
-      await Provider.of<Users>(context, listen: false)
-          .rateHp(starNum, widget.peerId);
+      await Provider.of<Users>(context, listen: false).rateHp(
+        rating: starNum,
+        rater: widget.currentId,
+        rated: widget.peerId,
+      );
     } catch (e) {
       Fluttertoast.showToast(msg: 'Sorry, rating failed, try again');
       print('Error at chat screen rating: $e');
@@ -224,21 +231,49 @@ class _ChatScreenState extends State<ChatScreen> {
                     height: (isMap || isAppointment) ? 180 : 200.0,
                     fit: BoxFit.cover,
                   ),
-                  if (isAppointment)
-                    Container(
-                      color: Colors.transparent,
-                      width: 300,
-                      height: 180,
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Text(
-                          isMap
-                              ? otherData['address']
-                              : 'Meet at \'A\': ${otherData['address']}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                  if (isAppointment || isMap)
+                    Positioned(
+                      bottom: 0,
+                      child: Container(
+//                      color: Colors.transparent,
+                        width: 300,
+                        height: 20,
+                        color: Colors.black26,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 5, bottom: 2),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Text(
+                              isMap
+                                  ? otherData['address']
+                                  : 'Meet at \'A\': ${otherData['address']}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: primaryColor),
+                            ),
+                          ),
                         ),
                       ),
                     ),
+//                  if (isAppointment || isMap)
+//                    Positioned(
+//                      bottom: 0,
+//                      child: Container(
+//                        height: 20,
+//                        width: 300,
+//                        color: Colors.black26,
+//                        child: (isMap)
+//                            ? Center(
+//                                child: Text(
+//                                  otherData['address'],
+//                                  overflow: TextOverflow.ellipsis,
+//                                  style: TextStyle(fontWeight: FontWeight.bold),
+//                                ),
+//                              )
+//                            : null,
+//                      ),
+//                    ),
                 ],
               ),
               borderRadius: BorderRadius.all(Radius.circular(8.0)),
@@ -247,13 +282,6 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: onPressed,
             padding: EdgeInsets.all(0),
           ),
-          if (isMap)
-            Container(
-              child: Text(
-                otherData['address'],
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
           if (isAppointment)
             Card(
               elevation: 8,
@@ -286,30 +314,46 @@ class _ChatScreenState extends State<ChatScreen> {
                               width: 5,
                             ),
                             Container(
+                              width: 100,
+                              height: 60,
                               child: Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
+                                  Flexible(
+                                    fit: FlexFit.loose,
+                                    child: RichText(
+                                      overflow: TextOverflow.fade,
+                                      text: TextSpan(
+                                          text: otherData['title'],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                              color: Colors.black),
+                                          children: <TextSpan>[
+                                            TextSpan(
+                                              text: ' with:',
+                                              style: TextStyle(
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 12,
+                                                color: Colors.black38,
+                                              ),
+                                            )
+                                          ]),
+                                    ),
+                                  ),
                                   Container(
                                     width: 100,
+                                    height: 20,
                                     child: Text(
                                       widget.isHp
                                           ? widget.currentName
                                           : widget.peerName,
-                                      overflow: TextOverflow.fade,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 5,
-                                  ),
-                                  Container(
-                                    width: 100,
-                                    child: Text(
-                                      otherData['title'],
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                      overflow: TextOverflow.fade,
+                                      softWrap: true,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.black38),
                                     ),
                                   ),
                                 ],
@@ -318,22 +362,22 @@ class _ChatScreenState extends State<ChatScreen> {
                             SizedBox(
                               width: 10,
                             ),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: <Widget>[
-                                    Text(
-                                      'Note:',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(otherData['note']),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                  ],
+                            Column(
+                              children: <Widget>[
+                                Text(
+                                  'Note:',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                              ),
+                                Container(
+                                  width: 100,
+                                  height: 50,
+                                  child: Text(
+                                    otherData['note'],
+                                    overflow: TextOverflow.fade,
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -367,101 +411,39 @@ class _ChatScreenState extends State<ChatScreen> {
                               ],
                             ),
                           ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            if (otherData['isAccepted'] == true)
-                              RaisedButton(
-                                color: Colors.orange,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text('Accepted'),
-                                onPressed: null,
-                              ),
-                            if (otherData['isAccepted'] == false)
-                              FlatButton.icon(
+                        if (!widget.isHp)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              if (otherData['isAccepted'] == true)
+                                RaisedButton(
+                                  color: Colors.orange,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  onPressed: () async {
-                                    try {
-                                      await Firestore.instance
-                                          .collection('AppointmentData')
-                                          .document(otherData['timestamp'])
-                                          .setData(otherData)
-                                          .then(
-                                        (value) {
-                                          Firestore.instance
-                                              .collection('ConsultationData')
-                                              .document(consultationId)
-                                              .collection(consultationId)
-                                              .document(otherData['timestamp'])
-                                              .updateData({
-                                            'isAccepted': true,
-                                          }).then((value) {
-                                            print('success');
-                                          });
-                                          Fluttertoast.showToast(
-                                              msg: 'Appointment created');
-                                        },
-                                      );
-                                    } catch (e) {
-                                      Fluttertoast.showToast(
-                                          msg:
-                                              'Appointment creation unsuccessful, please try again!',
-                                          gravity: ToastGravity.CENTER,
-                                          toastLength: Toast.LENGTH_LONG);
-                                    }
-                                  },
-                                  icon: Icon(
-                                    Icons.check_circle,
-                                    color: Colors.orange,
-                                  ),
-                                  label: Text('Accept')),
-                            FlatButton.icon(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
+                                  child: Text('Accepted'),
+                                  onPressed: null,
                                 ),
-                                onPressed: otherData['isAccepted']
-                                    ? null
-                                    : () async {
-                                        try {
-                                          await Firestore.instance
-                                              .collection('AppointmentData')
-                                              .document(otherData['timestamp'])
-                                              .setData(otherData)
-                                              .then(
-                                            (value) {
-                                              Firestore.instance
-                                                  .collection(
-                                                      'ConsultationData')
-                                                  .document(consultationId)
-                                                  .collection(consultationId)
-                                                  .document(
-                                                      otherData['timestamp'])
-                                                  .updateData({
-                                                'isDeclined': true,
-                                              });
-                                              Fluttertoast.showToast(
-                                                  msg: 'Appointment declined');
-                                            },
-                                          );
-                                        } catch (e) {
-                                          Fluttertoast.showToast(
-                                              msg:
-                                                  'Appointment declination unsuccessful, please try again!',
-                                              gravity: ToastGravity.CENTER,
-                                              toastLength: Toast.LENGTH_LONG);
-                                        }
-                                      },
-                                icon: Icon(
-                                  Icons.cancel,
+                              if (otherData['isAccepted'] == false)
+                                AcceptButton(
+                                  consultationId: consultationId,
+                                  data: otherData,
+                                ),
+                              if (otherData['isDeclined'] == true)
+                                RaisedButton(
                                   color: Colors.orange,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text('Declined'),
+                                  onPressed: null,
                                 ),
-                                label: Text('Decline')),
-                          ],
-                        )
+                              if (otherData['isDeclined'] == false)
+                                DeclineButton(
+                                    consultationId: consultationId,
+                                    data: otherData),
+                            ],
+                          ),
                       ],
                     ),
                   ],
@@ -483,6 +465,7 @@ class _ChatScreenState extends State<ChatScreen> {
       'endTime': appData['endTime'],
       'note': appData['note'],
       'isAccepted': false,
+      'isDeclined': false,
       'address': appData['address'],
       'latitude': appData['latitude'],
       'longitude': appData['longitude'],
@@ -562,6 +545,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       'title': otherData['title'],
                       'isAllDay': otherData['isAllDay'],
                       'isAccepted': otherData['isAccepted'],
+                      'isDeclined': otherData['isDeclined'],
                       'startTime': otherData['startTime'],
                       'endTime': otherData['endTime'],
                       'note': otherData['note'],
@@ -586,14 +570,72 @@ class _ChatScreenState extends State<ChatScreen> {
       color: primaryColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
       icon: Icon(
-        Icons.star,
+        (num == 0)
+            ? Icons.star_border
+            : (num <= 3) ? Icons.star_half : Icons.star,
         color: Colors.yellow,
       ),
       label: Text(num.toString()),
       onPressed: () async {
         await rate(num);
         Navigator.of(context).pop();
+        Navigator.of(context).pop();
       },
+    );
+  }
+
+  void callRatingDialog() {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () => Future.value(false),
+        child: AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              RaisedButton(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                color: Colors.orange,
+                child: Text(
+                  'Later',
+                  style: TextStyle(fontFamily: 'Piedra'),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          content: Text(
+            '''Please leave a rating for this healthcare professional for others to see...
+            
+Note: you can only rate this person once''',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          actions: <Widget>[
+            Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              direction: Axis.horizontal,
+              spacing: 10,
+              children: <Widget>[
+                buildRateButton(5),
+                buildRateButton(4),
+                buildRateButton(3),
+                buildRateButton(2),
+                buildRateButton(1),
+                buildRateButton(0),
+              ],
+            ),
+          ],
+          elevation: 8,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
     );
   }
 
@@ -883,12 +925,45 @@ class _ChatScreenState extends State<ChatScreen> {
             showMapPreview = false;
           });
           return Future.value(false);
+        } else if (!widget.isHp) {
+          await Firestore.instance
+              .collection('HpUserData')
+              .document(widget.peerId)
+              .collection('RatingData')
+              .document('Rating')
+              .get()
+              .then((value) async {
+            if (!value.exists) {
+              callRatingDialog();
+            } else {
+              bool hasRated = false;
+              await Firestore.instance
+                  .collection('HpUserData')
+                  .document(widget.peerId)
+                  .collection('RatingData')
+                  .document('Raters')
+                  .get()
+                  .then((value) {
+                hasRated = value.data[widget.currentId] == null ? false : true;
+                if (!hasRated) {
+                  callRatingDialog();
+                }
+                Navigator.of(context).pop();
+              });
+            }
+          });
+
+          return Future.value(false);
         }
         return Future.value(true);
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Consultation'),
+          title: Text(
+            widget.peerName,
+            style: TextStyle(fontFamily: 'ChelseaMarket'),
+            overflow: TextOverflow.ellipsis,
+          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
@@ -980,7 +1055,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       MaterialPageRoute(
                                           builder: (ctx) =>
                                               AppointmentScreen()));
-                                  print('the appointment is $appointmentData');
+//                                  print('the appointment is $appointmentData');
                                   if (appointmentData['latitude'] == null ||
                                       appointmentData['longitude'] == null) {
                                     return;
@@ -1017,79 +1092,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                 focusNode: focusNode,
                               ),
                             ),
-                            if (!widget.isHp)
-                              FutureBuilder(
-                                future: Firestore.instance
-                                    .collection('HpUserData')
-                                    .document(widget.peerId)
-                                    .get(),
-                                builder: (ctx, hpDataSnap) {
-                                  if (hpDataSnap.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return Container();
-                                  } else {
-                                    if (hpDataSnap.data['rating'] == null) {
-                                      return IconButton(
-                                        icon: Icon(Icons.star),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (ctx) => AlertDialog(
-                                              title: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: <Widget>[
-                                                  Icon(
-                                                    Icons.star,
-                                                    color: Colors.yellow,
-                                                  ),
-                                                  SizedBox(
-                                                    width: 10.0,
-                                                  ),
-                                                  Text(
-                                                    'Rating',
-                                                    style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                ],
-                                              ),
-                                              content: Text(
-                                                'Leave a rating for this healthcare professional for others to see...',
-                                                style: TextStyle(
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              actions: <Widget>[
-                                                Wrap(
-                                                  alignment:
-                                                      WrapAlignment.spaceEvenly,
-                                                  direction: Axis.horizontal,
-                                                  spacing: 10,
-                                                  children: <Widget>[
-                                                    buildRateButton(5),
-                                                    buildRateButton(4),
-                                                    buildRateButton(3),
-                                                    buildRateButton(2),
-                                                    buildRateButton(1),
-                                                    buildRateButton(0),
-                                                  ],
-                                                ),
-                                              ],
-                                              elevation: 8,
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8)),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    } else {
-                                      return Container();
-                                    }
-                                  }
-                                },
-                              ),
                             IconButton(
                               icon: Icon(Icons.send),
                               color: primaryColor,
@@ -1104,6 +1106,107 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
         ),
       ),
+    );
+  }
+}
+
+class AcceptButton extends StatelessWidget {
+  const AcceptButton({
+    Key key,
+    @required this.consultationId,
+    this.data,
+  }) : super(key: key);
+
+  final String consultationId;
+  final Map data;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton.icon(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      onPressed: () async {
+        try {
+          await Firestore.instance
+              .collection('AppointmentData')
+              .document(data['appId'])
+              .setData(data)
+              .then(
+            (value) async {
+              await Firestore.instance
+                  .collection('ConsultationData')
+                  .document(consultationId)
+                  .collection(consultationId)
+                  .document(data['timestamp'])
+                  .updateData({
+                'isAccepted': true,
+              }).then((value) {
+                print('success');
+              });
+              Fluttertoast.showToast(msg: 'Appointment created');
+            },
+          );
+        } catch (e) {
+          Fluttertoast.showToast(
+              msg: 'Appointment creation unsuccessful, please try again!',
+              gravity: ToastGravity.CENTER,
+              toastLength: Toast.LENGTH_LONG);
+        }
+      },
+      icon: Icon(
+        Icons.check_circle,
+        color: Colors.orange,
+      ),
+      label: Text('Accept'),
+    );
+  }
+}
+
+class DeclineButton extends StatelessWidget {
+  const DeclineButton({Key key, @required this.consultationId, this.data})
+      : super(key: key);
+
+  final String consultationId;
+  final Map data;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton.icon(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      onPressed: () async {
+        try {
+          await Firestore.instance
+              .collection('AppointmentData')
+              .document(data['appId'])
+              .setData(data)
+              .then(
+            (value) async {
+              await Firestore.instance
+                  .collection('ConsultationData')
+                  .document(consultationId)
+                  .collection(consultationId)
+                  .document(data['timestamp'])
+                  .updateData({
+                'isDeclined': true,
+              });
+              Fluttertoast.showToast(msg: 'Appointment declined');
+            },
+          );
+        } catch (e) {
+          Fluttertoast.showToast(
+              msg: 'Appointment declination unsuccessful, please try again!',
+              gravity: ToastGravity.CENTER,
+              toastLength: Toast.LENGTH_LONG);
+        }
+      },
+      icon: Icon(
+        Icons.cancel,
+        color: Colors.orange,
+      ),
+      label: Text('Decline'),
     );
   }
 }

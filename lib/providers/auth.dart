@@ -82,7 +82,7 @@ class Auth with ChangeNotifier {
       _expiryDate = idResult.expirationTime;
 
       await _isHp();
-      await _getCurrentUserData();
+      if (isSignIn) await _getCurrentUserData();
       notifyListeners();
       _autoLogout();
       final shPrefs = await SharedPreferences.getInstance();
@@ -109,17 +109,18 @@ class Auth with ChangeNotifier {
       } else if (e.toString().contains('ERROR_WEAK_PASSWORD')) {
         errorMessage = 'Password too weak.';
       }
+      result.user.delete();
       print('An error occured at Auth _authenticate: $e');
       throw errorMessage;
     }
   }
 
   Future<void> signIn(String email, String password) async {
-    return _authenticate(email, password, true);
+    return await _authenticate(email, password, true);
   }
 
   Future<void> signUp(String email, String password) async {
-    return _authenticate(email, password, false);
+    return await _authenticate(email, password, false);
   }
 
   Future<FirebaseUser> getCurrentUser() async {
@@ -199,6 +200,7 @@ class Auth with ChangeNotifier {
     if (isHp) {
       final user =
           await _firestore.collection('HpUserData').document(userId).get();
+
       _currentHpData = HpUserData(
         email: user.data['email'],
         fname: user.data['fname'],
@@ -206,7 +208,8 @@ class Auth with ChangeNotifier {
         address: user.data['address'],
         age: user.data['age'],
         sex: user.data['sex'],
-        profession: user.data['profession'],
+        professionIndex: user.data['professionIndex'],
+        specializationIndex: user.data['specializationIndex'],
         experience: user.data['experience'],
         shortDescription: user.data['shortDescription'],
         userId: user.data['userId'],
@@ -215,6 +218,7 @@ class Auth with ChangeNotifier {
     } else {
       final user =
           await _firestore.collection('CUserData').document(userId).get();
+
       _currentClData = CUserData(
         email: user.data['email'],
         fname: user.data['fname'],

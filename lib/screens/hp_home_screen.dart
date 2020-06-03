@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hilife/constants.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/hp_app_drawer.dart';
@@ -32,84 +34,187 @@ class _HpHomeScreenState extends State<HpHomeScreen> {
   Widget build(BuildContext context) {
     HpUserData currentUser =
         Provider.of<Auth>(context, listen: false).currentHpData;
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       drawer: HpAppDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.green[800],
         elevation: 0,
         title: Text('Home'),
       ),
       body: Container(
+        color: Colors.black26,
         child: Column(
           children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.all(8),
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: Colors.black12.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(100),
-                        image: DecorationImage(
-                          image: NetworkImage(currentUser.pictureUrl),
-                          fit: BoxFit.scaleDown,
-                        ),
-                      ),
-                      //image holder
+            Container(
+              height: screenSize.height * 0.5,
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    width: double.infinity,
+                    height: screenSize.height * 0.5,
+                    child: CustomPaint(
+                      painter: PaintSlope(),
                     ),
-                    Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.star,
-                          size: 30,
-                          color: Colors.pink,
-                        ),
-                        Text(
-                          '4.13',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-                Container(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  Column(
                     children: <Widget>[
-                      Text(
-                        '${currentUser.fname} ${currentUser.lname}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          FutureBuilder<DocumentSnapshot>(
+                              future: Firestore.instance
+                                  .collection('HpUserData')
+                                  .document(currentUser.userId)
+                                  .collection('RatingData')
+                                  .document('Rating')
+                                  .get(),
+                              builder: (context, snapshot) {
+                                if (snapshot.error != null) {
+                                  return Container(
+                                    child: Center(
+                                      child: Text(
+                                          'Sorry, an error occurred, please reload'),
+                                    ),
+                                  );
+                                }
+
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.all(8),
+                                      width: 150,
+                                      height: 150,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black12.withOpacity(0.1),
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                              currentUser.pictureUrl),
+                                          fit: BoxFit.scaleDown,
+                                        ),
+                                      ),
+                                      //image holder
+                                    ),
+                                    (snapshot.connectionState ==
+                                            ConnectionState.waiting)
+                                        ? CircularProgressIndicator()
+                                        : snapshot.data.exists
+                                            ? Row(
+                                                children: <Widget>[
+                                                  snapshot.data['rated'] == 0
+                                                      ? Icon(Icons.star_border)
+                                                      : snapshot
+                                                                      .data[
+                                                                  'rated'] <=
+                                                              3
+                                                          ? Icon(
+                                                              Icons.star_border)
+                                                          : Icon(Icons.star),
+                                                  RichText(
+                                                    text: TextSpan(
+                                                        text: snapshot
+                                                            .data['rated']
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                            color: Colors.blue),
+                                                        children: <TextSpan>[
+                                                          TextSpan(
+                                                              text:
+                                                                  '(${snapshot.data['reviewers']} reviewers)')
+                                                        ]),
+                                                  ),
+                                                ],
+                                              )
+                                            : Row(
+                                                children: <Widget>[
+                                                  Icon(Icons.star_border),
+                                                  Text('New'),
+                                                ],
+                                              )
+                                  ],
+                                );
+                              }),
+                          Container(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  '${currentUser.fname} ${currentUser.lname}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text(
+                                  kProfessions[currentUser.professionIndex]
+                                      .specialisationProfession,
+                                  style: TextStyle(color: Colors.black38),
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Text('Clients served'),
+                              ],
+                            ),
+                          )
+                        ],
                       ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        currentUser.profession,
-                        style: TextStyle(color: Colors.black38),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text('Clients served'),
                     ],
                   ),
-                )
-              ],
-            ),
-            Divider(
-              color: Colors.grey,
+                  Positioned(
+                    bottom: 0,
+                    child: Container(
+                      width: screenSize.width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Card(
+                            color: Colors.green.withOpacity(0.7),
+                            elevation: 8,
+                            child: Container(
+                              height: 140,
+                              width: 120,
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  Icon(Icons.event_note),
+                                  Text('Appointments'),
+                                  Text('X available'),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Card(
+                            color: Colors.green.withOpacity(0.7),
+                            elevation: 8,
+                            child: Container(
+                              height: 140,
+                              width: 120,
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: <Widget>[
+                                  Icon(Icons.people),
+                                  Text('Clients'),
+                                  Text('X available'),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: StreamBuilder<DocumentSnapshot>(
@@ -127,20 +232,13 @@ class _HpHomeScreenState extends State<HpHomeScreen> {
                         return Container(
                             child: Text('You have 0 online consultations'));
                       } else {
-                        List<String> ids = [];
-
-                        for (String consultationId
-                            in snapshot.data.data['consulted']) {
-                          ids.add(consultationId);
-                        }
-
                         return Container(
-                          width: screenWidth * 0.9,
+                          width: screenSize.width * 0.9,
                           child: ListView.builder(
-                            itemCount: ids.length,
+                            itemCount: snapshot.data.data['consulted'].length,
                             itemBuilder: (ctx, i) => Container(
                               child: ClHCard(
-                                ids[i],
+                                snapshot.data.data['consulted'][i],
                                 currentUser,
                               ),
                             ),
@@ -154,5 +252,29 @@ class _HpHomeScreenState extends State<HpHomeScreen> {
         ),
       ),
     );
+  }
+}
+
+class PaintSlope extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint();
+    paint.color = Colors.green[800];
+    paint.style = PaintingStyle.fill;
+
+    var path = Path();
+
+    path.moveTo(0, size.height * 0.5);
+    path.quadraticBezierTo(
+        size.width / 2, size.height, size.width, size.height * 0.5);
+    path.lineTo(size.width, 0);
+    path.lineTo(0, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }

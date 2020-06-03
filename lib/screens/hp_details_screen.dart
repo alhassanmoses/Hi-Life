@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hilife/constants.dart';
 import 'package:provider/provider.dart';
 
 import '../models/user.dart';
@@ -36,28 +37,44 @@ class HpDetailsScreen extends StatelessWidget {
                           stops: [0, 1],
                         ),
                       ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(20.0),
-                              bottomRight: Radius.circular(20.0)),
-                          image: DecorationImage(
-                            image: NetworkImage(
-                              hp.pictureUrl,
+                      child: Stack(
+                        children: <Widget>[
+                          Container(
+                            width: double.infinity,
+                            height: double.infinity * 0.5,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(20.0),
+                                  bottomRight: Radius.circular(20.0)),
                             ),
-                            fit: BoxFit.scaleDown,
                           ),
-                        ),
+                          Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(500),
+                              child: Image.network(hp.pictureUrl),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Positioned(
                       top: 10,
-                      left: 10,
-                      child: IconButton(
-                        color: Colors.blueAccent,
-                        icon: Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.of(context).pop(),
+                      left: 20,
+                      child: Card(
+                        color: Colors.orangeAccent,
+                        elevation: 10,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: IconButton(
+                          color: Colors.blueAccent,
+                          icon: Icon(
+                            Icons.reply,
+                            color: Colors.pink,
+                          ),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
                       ),
                     )
                   ],
@@ -71,18 +88,29 @@ class HpDetailsScreen extends StatelessWidget {
                       Text(
                         '${hp.fname} ${hp.lname}',
                         style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                            fontFamily: 'Piedra'),
                       ),
                       Text(
-                        hp.profession,
+                        kProfessions[hp.professionIndex]
+                            .specialisationProfession,
                         style: TextStyle(
-                          fontSize: 25,
-                          color: Colors.black38,
+                            fontSize: 25,
+                            color: Colors.black38,
+                            fontFamily: 'Lobster'),
+                      ),
+                      Container(
+                        constraints: BoxConstraints(maxHeight: 100),
+                        width: 300,
+                        child: SingleChildScrollView(
+                          child: Text(
+                            hp.shortDescription,
+                            style: TextStyle(fontFamily: 'ChelseaMarket'),
+                          ),
                         ),
                       ),
-                      Text(hp.shortDescription),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
@@ -163,11 +191,18 @@ class HpDetailsScreen extends StatelessWidget {
                                     MainAxisAlignment.spaceEvenly,
                                 children: <Widget>[
                                   Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    elevation: 8,
                                     child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.greenAccent,
+                                      ),
                                       padding: EdgeInsets.all(10),
                                       height: 100,
                                       width: 100,
-                                      color: Colors.greenAccent,
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -186,11 +221,18 @@ class HpDetailsScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    elevation: 8,
                                     child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.lightBlueAccent,
+                                      ),
                                       padding: EdgeInsets.all(10),
                                       height: 100,
                                       width: 100,
-                                      color: Colors.lightBlueAccent,
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -207,11 +249,18 @@ class HpDetailsScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Card(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    elevation: 8,
                                     child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.orangeAccent,
+                                      ),
                                       padding: EdgeInsets.all(10),
                                       height: 100,
                                       width: 100,
-                                      color: Colors.orangeAccent,
                                       child: Column(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceEvenly,
@@ -294,8 +343,17 @@ class _BuildViewAddressState extends State<BuildViewAddress> {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
+      elevation: 8,
       color: Colors.orangeAccent,
-      child: viewAddress ? Text(widget.address) : Text('View working address'),
+      child: viewAddress
+          ? Text(
+              widget.address,
+              style: TextStyle(fontFamily: 'ChelseaMarket'),
+            )
+          : Text(
+              'View working address',
+              style: TextStyle(fontFamily: 'ChelseaMarket'),
+            ),
       onPressed: () {
         showAddress();
       },

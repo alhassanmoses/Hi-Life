@@ -53,3 +53,15 @@ flutter:
         - asset: assets/fonts/Lato-Regular.ttf
         - asset: assets/fonts/Lato-Bold.ttf
           weight: 700
+    - family: ChelseaMarket
+      fonts:
+        - asset: assets/fonts/ChelseaMarket-Regular.ttf
+    - family: Lobster
+      fonts:
+        - asset: assets/fonts/Lobster-Regular.ttf
+    - family: Piedra
+      fonts:
+        - asset: assets/fonts/Piedra-Regular.ttf
+    - family: VarelaRound
+      fonts:
+        - asset: assets/fonts/VarelaRound-Regular.ttf

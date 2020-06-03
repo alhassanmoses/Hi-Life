@@ -6,7 +6,7 @@ import './providers/auth.dart';
 import './screens/client_home_screen.dart';
 import './screens/welcome_screen.dart';
 import './utilities/custom_route.dart';
-import './screens/user_details_screen_collect.dart';
+import './screens/user_details_collect_screen.dart';
 import './providers/users.dart';
 import './screens/hp_list_screen.dart';
 import './screens/hp_home_screen.dart';
