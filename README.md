@@ -1,4 +1,4 @@
-# hilife
+# Hi-Life
 
 A Flutter application to help users far and wide to find and gain easy access to healthcare professionals for all their healthcare enquiries and consultation.
 
