@@ -1,19 +1,46 @@
 # Hi-Life
 
-A Flutter application to help users far and wide to find and gain easy access to healthcare professionals for all their healthcare enquiries and consultation.
+This is a health-care application build on flutter that leverages google firebase technologies to deliver, it provides users with a platform to easily connect and with healthcare professionals around the world healthcare querries and to schedule appointments where neccessary.
 
-## Getting Started
+## How to Use 
 
-This project is a starting point for a Flutter application.
+**Step 1:**
 
-A few resources to get you started if this is your first Flutter project:
+Download or clone this repo by using the link below:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+```
+https://github.com/zubairehman/flutter-boilerplate-project.git
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Step 2:**
+
+Go to project root and execute the following command in console to get the required dependencies: 
+
+```
+flutter pub get 
+```
+
+## Features:
+
+* Splash
+* Login
+* Home
+* Realtime Chat
+* Maps 
+* Convenient Animations
+* Rating
+* Location
+* Firestore Database
+* Routing
+* Theme
+* Provider (State Management)
+* Validation
+* User Notifications
+* Logging
+
+## Conclusion
+
+I will be glad to answer any qurreis on the project personally, you can contact me on any of my social handles provided.
 
 
-//PS: more comments to be added soon...
+
