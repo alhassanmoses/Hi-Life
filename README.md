@@ -1,5 +1,7 @@
 # Hi-Life
 
+# Description
+
 This is a health-care application build on flutter that leverages google firebase technologies to deliver, it provides users with a platform to easily connect and with healthcare professionals around the world healthcare querries and to schedule appointments where neccessary.
 
 ## How to Use 
