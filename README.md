@@ -32,6 +32,7 @@ flutter pub get
 * Convenient Animations
 * Rating
 * Location
+* Scheduling 
 * Firestore Database
 * Routing
 * Theme
