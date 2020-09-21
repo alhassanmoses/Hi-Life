@@ -11,7 +11,7 @@ This is a health-care application build on flutter that leverages google firebas
 Download or clone this repo by using the link below:
 
 ```
-https://github.com/zubairehman/flutter-boilerplate-project.git
+https://github.com/alhassanmoses/Hi-Life
 ```
 
 **Step 2:**
